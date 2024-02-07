@@ -12,7 +12,7 @@ Last Name       | First Name      | GitHub Username    | Scrum Role
 TBD             | TBD             | TBD                | TBDDeveloper
 TBD             | TBD             | TBD                | TBDScrum Master
 TBD             | TBD             | TBD                | TBDProduct Owner
-TBD             | TBD             | TBD                | TBD
+Wolfe           | Emily           | userewolfe         | Developer
 
 ## :eyes: :memo: Scrum Linter Reports:
 Access the [Scrum Linter Report](https://cs.boisestate.edu/~bdit/ScrumLinter/CS471S24ScrumLinterReports/CS471-S24-Team13_bUSuOn9i3ryRug3twJcT3KYBv48dryri7OLsmdsK/). A new report will be automatically generated every few hours.

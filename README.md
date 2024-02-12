@@ -11,7 +11,7 @@ Last Name       | First Name      | GitHub Username    | Scrum Role
 --------------- | --------------- | ------------------ | ---------------
 Pittman         | Jordan          | jordanpittman      | Scrum Master
 Sarmento        | Abbie           | abbiesarmento      | Developer
-TBD             | TBD             | TBD                | TBDProduct Owner
+Weiler          | Chadwick        | chadwickweiler     | Product Owner
 Wolfe           | Emily           | userewolfe         | Developer
 
 ## :eyes: :memo: Scrum Linter Reports:

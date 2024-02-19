@@ -1,9 +1,9 @@
-## Team Name: TBD
+## Team Name: Passive Agressive Sticky Notes  
 
-## Project Name: TBD
+## Project Name: Spotify Discord Bot
 
 ## Project Description:
-TBD (e.g., build a TBD app for TBD)
+Discord bot should allow users to Create and modify a playlist to be playing in Discord. 
 
 ## Team Members:
 

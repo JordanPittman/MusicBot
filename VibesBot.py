@@ -1,7 +1,7 @@
 #Bare Bones Bot implementation
 
 #imports
-from Secrets import DISCORD_TOKEN
+from Secrets import DISCORD_TOKEN, YOUTUBE_API_KEY
 import discord #will need more from this application
 from discord.ext import commands
 import youtube_dl #will need this when we get to youtube implementation

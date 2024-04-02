@@ -46,7 +46,6 @@ async def join(ctx):
     else:
         await ctx.send("You are not in a voice channel")
 
-
 # Command for playing music and functionality for the queue/playlist
 @bot.command()
 async def play(ctx, url: str):
@@ -110,6 +109,7 @@ async def play(ctx, url: str):
         # Get the audio stream URL
         audio_url = video.streams.filter(only_audio=True).first().url
         # Attempt to try and keep the music playing if it gets interrupted (may need some tweaking)
+
         ffmpeg_options = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn',
@@ -132,6 +132,15 @@ async def play(ctx, url: str):
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
 
+# Command to skip a song
+@bot.command()
+async def skip(ctx):
+    voice_client = ctx.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()  # This stops the current song and triggers the `after` callback
+    else:
+        await ctx.send("There's no song currently playing.")
+=======
         voice_client.play(source)
         await ctx.send(f"Now playing: {video.title}")
     else:

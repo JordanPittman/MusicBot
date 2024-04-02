@@ -148,5 +148,103 @@ async def skip(ctx):
 
 
 
+# Command for playing music and functionality for the queue/playlist
+@bot.command()
+async def play(ctx, url: str):
+    global is_playing
+
+    # Check if the user is in a voice channel
+    if ctx.author.voice and ctx.author.voice.channel:
+        voice_channel = ctx.author.voice.channel
+
+        # Connect to the voice channel if the bot is not already connected
+        if voice_channel not in [vc.channel for vc in bot.voice_clients]:
+            voice_client = await voice_channel.connect()
+        else:
+            voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
+
+        # Fetch the YouTube video
+        video = YouTube(url)
+
+        # Get the audio stream URL
+        audio_url = video.streams.filter(only_audio=True).first().url
+
+        # Get the title of the song
+        title = video.title
+
+        # Add the song to the playlist
+        playlist.append((title, audio_url))
+
+        # If no song is currently playing, play the first song in the playlist
+        if not is_playing:
+            await play_next(ctx, voice_client)
+
+        # Send a message to Discord saying the song is being added to the queue
+        await ctx.send(f"Added to the queue: {title}")
+
+    else:
+        await ctx.send("You need to be in a voice channel to play music.")
+
+async def play_next(ctx, voice_client):
+    global is_playing
+
+    if not voice_client or not voice_client.is_connected():
+        is_playing = False
+        return
+    # Attempt to try and keep the music playing if it gets interrupted (may need some tweaking)
+    if playlist:
+        is_playing = True
+        title, audio_url = playlist.pop(0)
+
+        ffmpeg_options = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn',
+        }
+        source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
+        transformed_source = discord.PCMVolumeTransformer(source)
+
+        def after_playing(error):
+            fut = asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop)
+            try:
+                fut.result()
+            except:
+                # Handle errors if needed
+                pass
+
+        voice_client.play(transformed_source, after=after_playing)
+        await ctx.send(f"Now playing: {title}")
+    else:
+        is_playing = False
+        await ctx.send("There are no more songs in the queue.")
+
+# Command to skip a song
+@bot.command()
+async def skip(ctx):
+    voice_client = ctx.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()  # This stops the current song and triggers the `after` callback
+    else:
+        await ctx.send("There's no song currently playing.")
+
+# Command to clear the queue/playlist
+@bot.command()
+async def clear(ctx):
+    global playlist, is_playing
+    voice_client = ctx.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()  # Stop the currently playing song
+        playlist = []  # Clear the playlist
+        is_playing = False
+        await ctx.send("Playback stopped and the queue has been cleared.")
+    elif playlist:
+        playlist = []  # Clear the playlist if there's no song currently playing but the queue is not empty
+        is_playing = False
+        await ctx.send("The queue has been cleared.")
+    else:
+        await ctx.send("The queue is already empty.")
+
+=======
+
+
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)

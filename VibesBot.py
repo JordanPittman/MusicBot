@@ -90,6 +90,18 @@ async def play1994(ctx):
      # Call play command from inside of this command
     await ctx.invoke(bot.get_command('play'), url="https://www.youtube.com/watch?v=XI0KljAg8pU")
 
+# Stop the current song
+@bot.command()
+async def stop(ctx):
+    voice_client = ctx.voice_client
+    # if the bot is not connected to a voice channel or it is not playing a song
+    if not voice_client or not voice_client.is_playing():
+        # send a bot error message
+        await ctx.send("No song to be stopped")
+    else:
+        # stop the song
+        voice_client.stop()
+
 async def play_next(ctx, voice_client):
     global is_playing
 

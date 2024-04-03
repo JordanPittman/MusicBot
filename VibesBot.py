@@ -83,6 +83,13 @@ async def play(ctx, url: str):
     else:
         await ctx.send("You need to be in a voice channel to play music.")
 
+# Play the song Year to be young 1994
+@bot.command()
+async def play1994(ctx):
+
+     # Call play command from inside of this command
+    await ctx.invoke(bot.get_command('play'), url="https://www.youtube.com/watch?v=XI0KljAg8pU")
+
 async def play_next(ctx, voice_client):
     global is_playing
 

@@ -83,6 +83,42 @@ async def play(ctx, url: str):
     else:
         await ctx.send("You need to be in a voice channel to play music.")
 
+@bot.command()
+async def qplay(ctx, url: str):
+    global is_playing
+
+    # Check if the user is in a voice channel
+    if ctx.author.voice and ctx.author.voice.channel:
+        voice_channel = ctx.author.voice.channel
+
+        # Connect to the voice channel if the bot is not already connected
+        if voice_channel not in [vc.channel for vc in bot.voice_clients]:
+            voice_client = await voice_channel.connect()
+        else:
+            voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
+
+        # Fetch the YouTube video
+        video = YouTube(url)
+
+        # Get the audio stream URL
+        audio_url = video.streams.filter(only_audio=True).first().url
+
+        # Get the title of the song
+        title = video.title
+
+        # Add the song to the playlist
+        playlist.append((title, audio_url))
+
+        # If no song is currently playing, play the first song in the playlist
+        if not is_playing:
+            await play_next(ctx, voice_client)
+
+        # Send a message to Discord saying the song is being added to the queue
+        await ctx.send(f"Added to the queue: {title}")
+
+    else:
+        await ctx.send("You need to be in a voice channel to play music.")
+
 # Play the song Year to be young 1994
 @bot.command()
 async def play1994(ctx):

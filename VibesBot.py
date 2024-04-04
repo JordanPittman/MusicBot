@@ -2,6 +2,8 @@
 from Secrets import DISCORD_TOKEN, YOUTUBE_API_KEY
 from discord.ext import commands
 import discord
+import urllib.request
+import re
 from pytube import YouTube  # This line imports the YouTube class from the pytube library,
 # which lets us interact with YouTube videos and get the info from them.
 import asyncio  # Required for async sleep and loop control
@@ -84,7 +86,7 @@ async def play(ctx, url: str):
         await ctx.send("You need to be in a voice channel to play music.")
 
 @bot.command()
-async def qplay(ctx, url: str):
+async def qplay(ctx, *url: str):
     global is_playing
 
     # Check if the user is in a voice channel
@@ -97,8 +99,16 @@ async def qplay(ctx, url: str):
         else:
             voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
 
+        #searches the youtube url with + instead of spaces to fit the url format
+        nospaceurl = '+'.join(url)
+        #inserting youtube search here
+        html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + nospaceurl)
+        vlink = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+        newurl = ("https://www.youtube.com/watch?v=" + vlink[0])
+
+
         # Fetch the YouTube video
-        video = YouTube(url)
+        video = YouTube(newurl)
 
         # Get the audio stream URL
         audio_url = video.streams.filter(only_audio=True).first().url

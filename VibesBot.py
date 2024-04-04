@@ -48,6 +48,15 @@ async def join(ctx):
     else:
         await ctx.send("You are not in a voice channel")
 
+# lists the songs in the playlist
+@bot.command()
+async def list(ctx):
+    voice_client = ctx.guild.voice_client
+    #error message if bot is not in voice
+    if (voice_client is None):
+        await ctx.send("The bot is not in a voice channel")
+        await ctx.send("Use the command !play and add songs then call !list again")
+
 # Command for playing music and functionality for the queue/playlist
 @bot.command()
 async def play(ctx, url: str):

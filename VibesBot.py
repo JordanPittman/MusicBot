@@ -215,6 +215,11 @@ async def clear(ctx):
     else:
         await ctx.send("The queue is already empty.")
 
+@bot.command()
+async def plz_help(ctx):
+    await ctx.send("!hello - prints out Hello")
+    await ctx.send("!join - joins a voice channel")
+    await ctx.send("!play [insert desired song] - will play a song or add to the queue")
 
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)

@@ -221,5 +221,16 @@ async def plz_help(ctx):
     await ctx.send("!join - joins a voice channel")
     await ctx.send("!play [insert desired song] - will play a song or add to the queue")
 
+
+@bot.command()
+async def leave(ctx):
+    voice_client = ctx.guild.voice_client
+
+    if voice_client is not None:
+        await voice_client.disconnect()
+        await ctx.send("Disconnected from the voice channel.")
+    else:
+        await ctx.send("I'm not connected to a voice channel.")
+
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)

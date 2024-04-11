@@ -61,6 +61,12 @@ async def list(ctx):
         for title in playlist:
             n += 1
             await ctx.send(f"{n}: {title[0]}")
+    #error message if list is empty plus instructions
+    else:
+        await ctx.send("There are no more songs in the playlist")
+        await ctx.send("Use the command !play and add songs then call !list again")
+
+
 
 
 

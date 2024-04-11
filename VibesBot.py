@@ -56,6 +56,13 @@ async def list(ctx):
     if (voice_client is None):
         await ctx.send("The bot is not in a voice channel")
         await ctx.send("Use the command !play and add songs then call !list again")
+    elif playlist:
+        n = 0
+        for title in playlist:
+            n += 1
+            await ctx.send(f"{n}: {title[0]}")
+
+
 
 # Command for playing music and functionality for the queue/playlist
 @bot.command()

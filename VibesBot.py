@@ -230,9 +230,10 @@ async def clear(ctx):
 
 @bot.command()
 async def plz_help(ctx):
-    await ctx.send("!hello - prints out Hello")
-    await ctx.send("!join - joins a voice channel")
+    await ctx.send("!join - joins voice channel")
     await ctx.send("!play [insert desired song] - will play a song or add to the queue")
+    await ctx.send("!leave - leaves voice channel")
+    await ctx.send("!qplay [song title] - adds to the queue")
 
 
 @bot.command()

@@ -229,6 +229,18 @@ async def clear(ctx):
         await ctx.send("The queue is already empty.")
 
 @bot.command()
+async def repeat(ctx):
+    global playlist, is_playing
+    voice_client = ctx.voice_client
+
+    if voice_client and voice_client.is_playing():
+        # add song to playlist
+        playlist.insert(0, voice_client.is_playing())
+        await ctx.send("Current song will be repeated.")
+    else:
+        await ctx.send("There's no song currently playing.")
+
+@bot.command()
 async def plz_help(ctx):
     await ctx.send("!join - joins voice channel")
     await ctx.send("!play [insert desired song] - will play a song or add to the queue")

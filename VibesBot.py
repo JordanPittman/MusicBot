@@ -24,6 +24,9 @@ playlist = []
 # Variable to keep track of whether a song is currently playing
 is_playing = False
 
+#Variable to keep track of what song is currently playing to be repeated
+current_song_url = None
+
 # event handler that outputs when the bot is online
 @bot.event
 async def on_ready():  # overrides on_ready in discord program
@@ -155,7 +158,7 @@ async def qplay(ctx, *url: str):
 @bot.command()
 async def play1994(ctx):
 
-     # Call play command from inside of this command
+    # Call play command from inside of this command
     await ctx.invoke(bot.get_command('play'), url="https://www.youtube.com/watch?v=XI0KljAg8pU")
 
 # Stop the current song
@@ -171,7 +174,7 @@ async def stop(ctx):
         voice_client.stop()
 
 async def play_next(ctx, voice_client):
-    global is_playing
+    global is_playing, current_song_url
 
     if not voice_client or not voice_client.is_connected():
         is_playing = False
@@ -197,6 +200,7 @@ async def play_next(ctx, voice_client):
                 pass
 
         voice_client.play(transformed_source, after=after_playing)
+        current_song_url = audio_url
         await ctx.send(f"Now playing: {title}")
     else:
         is_playing = False
@@ -230,12 +234,10 @@ async def clear(ctx):
 
 @bot.command()
 async def repeat(ctx):
-    global playlist, is_playing
-    voice_client = ctx.voice_client
-
-    if voice_client and voice_client.is_playing():
-        # add song to playlist
-        playlist.insert(0, voice_client.is_playing())
+    global current_song_url
+    if current_song_url:
+        # Add the currently playing song back to the playlist
+        playlist.insert(0, ("Repeated Song", current_song_url))
         await ctx.send("Current song will be repeated.")
     else:
         await ctx.send("There's no song currently playing.")

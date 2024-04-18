@@ -215,6 +215,23 @@ async def skip(ctx):
     else:
         await ctx.send("There's no song currently playing.")
 
+#Clear song queue
+@bot.command()
+async def clear(ctx):
+    global playlist, is_playing
+    voice_client = ctx.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()  # Stop the currently playing song
+        playlist = []  # Clear the playlist
+        is_playing = False
+        await ctx.send("Playback stopped and the queue has been cleared.")
+    elif playlist:
+        playlist = []  # Clear the playlist if there's no song currently playing but the queue is not empty
+        is_playing = False
+        await ctx.send("The queue has been cleared.")
+    else:
+        await ctx.send("The queue is already empty.")
+
 @bot.command()
 async def repeat(ctx):
     global current_song_url

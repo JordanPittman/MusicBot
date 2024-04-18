@@ -206,9 +206,14 @@ async def play_next(ctx, voice_client):
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
 
-
-
-
+# Skip a song
+@bot.command()
+async def skip(ctx):
+    voice_client = ctx.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()  # This stops the current song and triggers the after callback
+    else:
+        await ctx.send("There's no song currently playing.")
 
 @bot.command()
 async def repeat(ctx):

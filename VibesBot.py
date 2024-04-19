@@ -24,8 +24,12 @@ playlist = []
 # Variable to keep track of whether a song is currently playing
 is_playing = False
 
-#Variable to keep track of what song is currently playing to be repeated
+# Variable to keep track of what song is currently playing to be repeated
 current_song_url = None
+
+# Variable to keep track of the name of the currently playing song
+current_song_name = None
+
 
 # event handler that outputs when the bot is online
 @bot.event
@@ -38,10 +42,6 @@ async def on_ready():  # overrides on_ready in discord program
 
 
 @bot.command()
-async def hello(ctx):
-    await ctx.send("Hello")
-
-@bot.command()
 async def join(ctx):
     v_channel = bot.get_channel(MUSIC_CHANNEL_ID)
     if ctx.author.voice:
@@ -51,26 +51,35 @@ async def join(ctx):
     else:
         await ctx.send("You are not in a voice channel")
 
+
 # lists the songs in the playlist
 @bot.command()
 async def list(ctx):
+    global current_song_name, is_playing
     voice_client = ctx.guild.voice_client
-    #error message if bot is not in voice
+    # error message if bot is not in voice
     if (voice_client is None):
         await ctx.send("The bot is not in a voice channel")
         await ctx.send("Use the command !play and add songs then call !list again")
     elif playlist:
+        await ctx.send(f"Currently Playing: {current_song_name}")
+        await ctx.send("---------------------------------------")
         n = 0
         for title in playlist:
             n += 1
             await ctx.send(f"{n}: {title[0]}")
-    #error message if list is empty plus instructions
+        await ctx.send("---------------------------------------")
+    # error message if list is empty plus instructions
     else:
-        await ctx.send("There are no more songs in the playlist")
-        await ctx.send("Use the command !play and add songs then call !list again")
-
-
-
+        if (is_playing):
+            await ctx.send(f"Currently Playing: {current_song_name}")
+            await ctx.send("---------------------------------------")
+            await ctx.send("*There are no more songs in the playlist*")
+            await ctx.send("Use the command !play and add songs then call !list again")
+            await ctx.send("---------------------------------------")
+        else:
+            await ctx.send("*There are no more songs in the playlist*")
+            await ctx.send("Use the command !play and add songs then call !list again")
 
 
 # Command for playing music and functionality for the queue/playlist
@@ -110,6 +119,7 @@ async def play(ctx, url: str):
     else:
         await ctx.send("You need to be in a voice channel to play music.")
 
+
 @bot.command()
 async def qplay(ctx, *url: str):
     global is_playing
@@ -124,13 +134,12 @@ async def qplay(ctx, *url: str):
         else:
             voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
 
-        #searches the youtube url with + instead of spaces to fit the url format
+        # searches the youtube url with + instead of spaces to fit the url format
         nospaceurl = '+'.join(url)
-        #inserting youtube search here
+        # inserting youtube search here
         html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + nospaceurl)
         vlink = re.findall(r"watch\?v=(\S{11})", html.read().decode())
         newurl = ("https://www.youtube.com/watch?v=" + vlink[0])
-
 
         # Fetch the YouTube video
         video = YouTube(newurl)
@@ -154,12 +163,6 @@ async def qplay(ctx, *url: str):
     else:
         await ctx.send("You need to be in a voice channel to play music.")
 
-# Play the song Year to be young 1994
-@bot.command()
-async def play1994(ctx):
-
-    # Call play command from inside of this command
-    await ctx.invoke(bot.get_command('play'), url="https://www.youtube.com/watch?v=XI0KljAg8pU")
 
 # Stop the current song
 @bot.command()
@@ -173,8 +176,9 @@ async def stop(ctx):
         # stop the song
         voice_client.stop()
 
+
 async def play_next(ctx, voice_client):
-    global is_playing, current_song_url
+    global is_playing, current_song_url, current_song_name
 
     if not voice_client or not voice_client.is_connected():
         is_playing = False
@@ -201,10 +205,13 @@ async def play_next(ctx, voice_client):
 
         voice_client.play(transformed_source, after=after_playing)
         current_song_url = audio_url
+        current_song_name = title
         await ctx.send(f"Now playing: {title}")
+
     else:
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
+
 
 # Skip a song
 @bot.command()
@@ -215,7 +222,8 @@ async def skip(ctx):
     else:
         await ctx.send("There's no song currently playing.")
 
-#Clear song queue
+
+# Clear song queue
 @bot.command()
 async def clear(ctx):
     global playlist, is_playing
@@ -232,15 +240,17 @@ async def clear(ctx):
     else:
         await ctx.send("The queue is already empty.")
 
+
 @bot.command()
 async def repeat(ctx):
-    global current_song_url
-    if current_song_url:
+    global current_song_url, current_song_name, is_playing
+    if is_playing:
         # Add the currently playing song back to the playlist
-        playlist.insert(0, ("Repeated Song", current_song_url))
-        await ctx.send("Current song will be repeated.")
+        playlist.insert(0, (current_song_name, current_song_url))
+        await ctx.send(f"{current_song_name} added to the top of the list")
     else:
         await ctx.send("There's no song currently playing.")
+
 
 @bot.command()
 async def plz_help(ctx):
@@ -259,6 +269,7 @@ async def leave(ctx):
         await ctx.send("Disconnected from the voice channel.")
     else:
         await ctx.send("I'm not connected to a voice channel.")
+
 
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)

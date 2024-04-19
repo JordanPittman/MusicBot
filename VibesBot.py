@@ -4,6 +4,7 @@ from discord.ext import commands
 import discord
 import urllib.request
 import re
+import random
 from pytube import YouTube  # This line imports the YouTube class from the pytube library,
 # which lets us interact with YouTube videos and get the info from them.
 import asyncio  # Required for async sleep and loop control
@@ -250,6 +251,20 @@ async def repeat(ctx):
         await ctx.send(f"{current_song_name} added to the top of the list")
     else:
         await ctx.send("There's no song currently playing.")
+
+
+@bot.command()
+async def shuffle(ctx):
+    voice_client = ctx.guild.voice_client
+    if not voice_client or not voice_client.is_connected():
+        await ctx.send("I need to be in a voice channel to shuffle the playlist.")
+        return
+
+    if len(playlist) > 1:  # Check if there are at least two songs to shuffle
+        random.shuffle(playlist)
+        await ctx.send("Shuffled the playlist!")
+    else:
+        await ctx.send("Not enough songs in the playlist to shuffle.")
 
 
 @bot.command()

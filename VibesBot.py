@@ -231,6 +231,10 @@ async def pause(ctx):
     if voice_client and voice_client.is_playing():
         voice_client.pause()  # Pauses song
         await ctx.send("Your song is now paused")
+    elif voice_client and voice_client.is_paused():
+        voice_client.resume()  # Resumes again
+        await ctx.send("Your song has resumed playing")
+
 
 
 # Clear song queue

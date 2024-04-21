@@ -224,6 +224,15 @@ async def skip(ctx):
         await ctx.send("There's no song currently playing.")
 
 
+# Pause a song
+@bot.command()
+async def pause(ctx):
+    voice_client = ctx.voice_client;
+    if voice_client and voice_client.is_playing():
+        voice_client.pause()  # Pauses song
+        await ctx.send("Your song is now paused")
+
+
 # Clear song queue
 @bot.command()
 async def clear(ctx):

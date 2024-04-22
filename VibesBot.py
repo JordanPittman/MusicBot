@@ -281,6 +281,16 @@ async def shuffle(ctx):
 
 
 @bot.command()
+async def volume(ctx, volume: int):
+    voice_client = ctx.guild.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.source.volume = volume / 100
+        await ctx.send(f"Volume set to {volume}%")
+    else:
+        await ctx.send("Nothing is playing right now.")
+
+
+@bot.command()
 async def plz_help(ctx):
     await ctx.send("!join - joins voice channel")
     await ctx.send("!play [insert desired song] - will play a song or add to the queue")

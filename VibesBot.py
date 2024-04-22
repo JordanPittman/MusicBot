@@ -297,6 +297,7 @@ async def plz_help(ctx):
     await ctx.send("!leave - leaves voice channel")
     await ctx.send("!qplay [song title] - adds to the queue")
     await ctx.send("!shuffle - shuffles the song queue if there are 2 or more songs")
+    await ctx.send("!volume [0-100] - sets the volume to a specified level")
 
 
 @bot.command()

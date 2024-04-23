@@ -31,6 +31,12 @@ current_song_url = None
 # Variable to keep track of the name of the currently playing song
 current_song_name = None
 
+# Variable to keep track of the  current song's requester name
+current_song_requester = None
+
+# Variable to keep track of the requester name
+requester = None
+
 
 # event handler that outputs when the bot is online
 @bot.event
@@ -56,7 +62,7 @@ async def join(ctx):
 # lists the songs in the playlist
 @bot.command()
 async def list(ctx):
-    global current_song_name, is_playing
+    global current_song_name, is_playing, current_song_requester
     voice_client = ctx.guild.voice_client
     # error message if bot is not in voice
     if (voice_client is None):
@@ -64,16 +70,19 @@ async def list(ctx):
         await ctx.send("Use the command !play and add songs then call !list again")
     elif playlist:
         await ctx.send(f"Currently Playing: {current_song_name}")
+        await ctx.send(f"Requested By: {current_song_requester}")
         await ctx.send("---------------------------------------")
         n = 0
         for title in playlist:
             n += 1
             await ctx.send(f"{n}: {title[0]}")
+            await ctx.send(f"Requested By: {title[2]}")
         await ctx.send("---------------------------------------")
     # error message if list is empty plus instructions
     else:
         if (is_playing):
             await ctx.send(f"Currently Playing: {current_song_name}")
+            await ctx.send(f"Requested By: {current_song_requester}")
             await ctx.send("---------------------------------------")
             await ctx.send("*There are no more songs in the playlist*")
             await ctx.send("Use the command !play and add songs then call !list again")
@@ -107,8 +116,13 @@ async def play(ctx, url: str):
         # Get the title of the song
         title = video.title
 
+        # Store the requestor name
+        requester = ctx.author.name
+
         # Add the song to the playlist
-        playlist.append((title, audio_url))
+        playlist.append((title, audio_url, requester))
+
+
 
         # If no song is currently playing, play the first song in the playlist
         if not is_playing:
@@ -151,8 +165,11 @@ async def qplay(ctx, *url: str):
         # Get the title of the song
         title = video.title
 
+        # Store the requestor name
+        requester = ctx.author.name
+
         # Add the song to the playlist
-        playlist.append((title, audio_url))
+        playlist.append((title, audio_url, requester))
 
         # If no song is currently playing, play the first song in the playlist
         if not is_playing:
@@ -179,7 +196,7 @@ async def stop(ctx):
 
 
 async def play_next(ctx, voice_client):
-    global is_playing, current_song_url, current_song_name
+    global is_playing, current_song_url, current_song_name, current_song_requester
 
     if not voice_client or not voice_client.is_connected():
         is_playing = False
@@ -187,7 +204,7 @@ async def play_next(ctx, voice_client):
     # Attempt to try and keep the music playing if it gets interrupted (may need some tweaking)
     if playlist:
         is_playing = True
-        title, audio_url = playlist.pop(0)
+        title, audio_url, requester = playlist.pop(0)
 
         ffmpeg_options = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -207,7 +224,10 @@ async def play_next(ctx, voice_client):
         voice_client.play(transformed_source, after=after_playing)
         current_song_url = audio_url
         current_song_name = title
+        current_song_requester = requester
+
         await ctx.send(f"Now playing: {title}")
+        await ctx.send(f"Requested by: {current_song_requester}")
 
     else:
         is_playing = False

@@ -36,7 +36,6 @@ python-dateutil==2.8.2
 python-Levenshtein==0.21.0
 pytube==15.0.0
 pytz==2023.3
-pywin32==306
 rapidfuzz==3.0.0
 requests==2.31.0
 rsa==4.9

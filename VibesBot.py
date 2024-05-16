@@ -1,6 +1,7 @@
 # imports
 from Secrets_template import DISCORD_TOKEN, YOUTUBE_API_KEY
 from discord.ext import commands
+from pytube.exceptions import RegexMatchError
 import discord
 import urllib.request
 import re

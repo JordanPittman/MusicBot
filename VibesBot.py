@@ -9,8 +9,8 @@ from pytube import YouTube  # This line imports the YouTube class from the pytub
 # which lets us interact with YouTube videos and get the info from them.
 import asyncio  # Required for async sleep and loop control
 
-CHANNEL_ID = 1216170695986384907
-MUSIC_CHANNEL_ID = 1224486311449329696
+CHANNEL_ID = 882840879130353705
+MUSIC_CHANNEL_ID = 560323369988521988
 
 # this makes it so the bot commands are recognized as starting with '!'
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
@@ -60,12 +60,12 @@ async def join(ctx):
 
 
 # lists the songs in the playlist
-@bot.command()
+@bot.command(aliases=['queue'])
 async def list(ctx):
     global current_song_name, is_playing, current_song_requester
     voice_client = ctx.guild.voice_client
     # error message if bot is not in voice
-    if (voice_client is None):
+    if voice_client is None:
         await ctx.send("The bot is not in a voice channel")
         await ctx.send("Use the command !play and add songs then call !list again")
     elif playlist:
@@ -80,7 +80,7 @@ async def list(ctx):
         await ctx.send("---------------------------------------")
     # error message if list is empty plus instructions
     else:
-        if (is_playing):
+        if is_playing:
             await ctx.send(f"Currently Playing: {current_song_name}")
             await ctx.send(f"Requested By: {current_song_requester}")
             await ctx.send("---------------------------------------")
@@ -94,8 +94,10 @@ async def list(ctx):
 
 # Command for playing music and functionality for the queue/playlist
 @bot.command()
-async def play(ctx, url: str):
+async def play(ctx, url: str = None):
     global is_playing
+
+    voice_client = ctx.guild.voice_client
 
     # Check if the user is in a voice channel
     if ctx.author.voice and ctx.author.voice.channel:
@@ -107,32 +109,40 @@ async def play(ctx, url: str):
         else:
             voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
 
-        # Fetch the YouTube video
-        video = YouTube(url)
+        # Check if the voice client is paused
+        if voice_client.is_paused():
+            voice_client.resume()
+            await ctx.send("Resumed the song")
+            return
 
-        # Get the audio stream URL
-        audio_url = video.streams.filter(only_audio=True).first().url
+        # If URL is provided, play a new song
+        if url:
+            # Fetch the YouTube video
+            video = YouTube(url)
 
-        # Get the title of the song
-        title = video.title
+            # Get the audio stream URL
+            audio_url = video.streams.filter(only_audio=True).first().url
 
-        # Store the requestor name
-        requester = ctx.author.name
+            # Get the title of the song
+            title = video.title
 
-        # Add the song to the playlist
-        playlist.append((title, audio_url, requester))
+            # Store the requestor name
+            requester = ctx.author.name
 
+            # Add the song to the playlist
+            playlist.append((title, audio_url, requester))
 
+            # If no song is currently playing, play the first song in the playlist
+            if not is_playing:
+                await play_next(ctx, voice_client)
 
-        # If no song is currently playing, play the first song in the playlist
-        if not is_playing:
-            await play_next(ctx, voice_client)
-
-        # Send a message to Discord saying the song is being added to the queue
-        await ctx.send(f"Added to the queue: {title}")
-
+            # Send a message to Discord saying the song is being added to the queue
+            await ctx.send(f"Added to the queue: {title}")
+        else:
+            await ctx.send("Please provide a YouTube URL to play.")
     else:
         await ctx.send("You need to be in a voice channel to play music.")
+
 
 
 @bot.command()

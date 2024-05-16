@@ -220,28 +220,37 @@ async def play_next(ctx, voice_client):
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn',
         }
-        source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
-        transformed_source = discord.PCMVolumeTransformer(source)
 
-        def after_playing(error):
-            fut = asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop)
-            try:
-                fut.result()
-            except:
-                # Handle errors if needed
-                pass
+        # Log before executing ffmpeg command
+        print(f"Executing ffmpeg command with URL: {audio_url}")
 
-        voice_client.play(transformed_source, after=after_playing)
-        current_song_url = audio_url
-        current_song_name = title
-        current_song_requester = requester
+        try:
+            source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
+            transformed_source = discord.PCMVolumeTransformer(source)
 
-        await ctx.send(f"Now playing: {title}")
-        await ctx.send(f"Requested by: {current_song_requester}")
+            def after_playing(error):
+                fut = asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop)
+                try:
+                    fut.result()
+                except:
+                    # Handle errors if needed
+                    pass
 
+            voice_client.play(transformed_source, after=after_playing)
+            current_song_url = audio_url
+            current_song_name = title
+            current_song_requester = requester
+
+            await ctx.send(f"Now playing: {title}")
+            await ctx.send(f"Requested by: {current_song_requester}")
+
+        except discord.errors.ClientException as e:
+            print(f"ClientException: {e}")
+            await ctx.send(f"Error playing {title}: {e}")
     else:
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
+
 
 
 # Skip a song

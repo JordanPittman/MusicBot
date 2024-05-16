@@ -1,5 +1,5 @@
 # imports
-from Secrets import DISCORD_TOKEN, YOUTUBE_API_KEY
+from Secrets_template import DISCORD_TOKEN, YOUTUBE_API_KEY
 from discord.ext import commands
 import discord
 import urllib.request

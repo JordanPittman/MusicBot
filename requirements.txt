@@ -21,7 +21,7 @@ idna==3.6
 Levenshtein==0.21.0
 multidict==6.0.5
 mutagen==1.47.0
-numpy==1.24.3
+numpy==1.23.4
 openpyxl==3.1.2
 pandas==2.0.2
 proto-plus==1.23.0

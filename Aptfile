@@ -1,2 +1,4 @@
 ffmpeg
 libpulse-dev
+libopus0
+libpulsedsp

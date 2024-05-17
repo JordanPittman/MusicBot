@@ -1,2 +1,3 @@
-worker: ./setup.sh && python VibesBot.py
+worker: python VibesBot.py
+
 

@@ -1,9 +1,12 @@
 # imports
-import random
 from Secrets_template import DISCORD_TOKEN, YOUTUBE_API_KEY
 from discord.ext import commands
+from pytube.exceptions import RegexMatchError
 import discord
-import yt_dlp as youtube_dl
+import urllib.request
+import re
+import random
+import yt_dlp
 import asyncio
 
 # Set the path to the ffmpeg binary
@@ -22,19 +25,16 @@ is_playing = False
 current_song_url = None
 current_song_name = None
 current_song_requester = None
-requester = None
 
 # event handler that outputs when the bot is online
 @bot.event
 async def on_ready():
     print('SlugBeats is ready to play music')
     channel = bot.get_channel(CHANNEL_ID)
-    await channel.send('SlugBeats is ready to create a mood')
     await channel.send('SlugBeats is ready to play music')
 
 @bot.command()
 async def join(ctx):
-    v_channel = bot.get_channel(MUSIC_CHANNEL_ID)
     if ctx.author.voice:
         v_channel = ctx.author.voice.channel
         await v_channel.connect()
@@ -89,24 +89,12 @@ async def play(ctx, url: str = None):
 
         if url:
             try:
-                ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'noplaylist': True,
-                    'quiet': True,
-                    'extractaudio': True,
-                    'audioformat': 'mp3',
-                    'outtmpl': 'downloads/%(title)s.%(ext)s',
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                    }],
-                }
-                
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                # Use yt-dlp to fetch the audio stream URL
+                ydl_opts = {'format': 'bestaudio/best'}
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info_dict = ydl.extract_info(url, download=False)
                     audio_url = info_dict['url']
-                    title = info_dict['title']
+                    title = info_dict.get('title', 'Unknown title')
                     requester = ctx.author.name
 
                 playlist.append((title, audio_url, requester))
@@ -135,22 +123,26 @@ async def qplay(ctx, *url: str):
             voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
 
         nospaceurl = '+'.join(url)
-        search_url = f"https://www.youtube.com/results?search_query={nospaceurl}"
-        ydl_opts = {'quiet': True, 'format': 'bestaudio'}
-        
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(search_url, download=False)
-            video = info_dict['entries'][0]  # Get the first video from the search results
-            audio_url = video['url']
-            title = video['title']
-            requester = ctx.author.name
+        html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + nospaceurl)
+        vlink = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+        newurl = ("https://www.youtube.com/watch?v=" + vlink[0])
 
-        playlist.append((title, audio_url, requester))
+        try:
+            ydl_opts = {'format': 'bestaudio/best'}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info_dict = ydl.extract_info(newurl, download=False)
+                audio_url = info_dict['url']
+                title = info_dict.get('title', 'Unknown title')
+                requester = ctx.author.name
 
-        if not is_playing:
-            await play_next(ctx, voice_client)
+            playlist.append((title, audio_url, requester))
 
-        await ctx.send(f"Added to the queue: {title}")
+            if not is_playing:
+                await play_next(ctx, voice_client)
+
+            await ctx.send(f"Added to the queue: {title}")
+        except Exception as e:
+            await ctx.send(f"An error occurred: {str(e)}")
     else:
         await ctx.send("You need to be in a voice channel to play music.")
 
@@ -188,8 +180,8 @@ async def play_next(ctx, voice_client):
                 fut = asyncio.run_coroutine_threadsafe(play_next(ctx, voice_client), bot.loop)
                 try:
                     fut.result()
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error in after_playing: {e}")
 
             voice_client.play(transformed_source, after=after_playing)
             current_song_url = audio_url
@@ -297,4 +289,3 @@ async def leave(ctx):
 
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)
-

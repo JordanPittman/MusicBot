@@ -10,9 +10,7 @@ from pytube import YouTube
 import asyncio
 
 # Set the path to the ffmpeg binary
-# Set the path to the ffmpeg binary
-ffmpeg_path = '/app/.heroku/vendor/bin/ffmpeg'  # Corrected path for ffmpeg
-
+ffmpeg_path = '/app/vendor/ffmpeg/ffmpeg'
 CHANNEL_ID = 882840879130353705
 MUSIC_CHANNEL_ID = 560323369988521988
 

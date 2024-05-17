@@ -168,6 +168,7 @@ async def play_next(ctx, voice_client):
         }
 
         print(f"Executing ffmpeg command with URL: {audio_url}")
+        print(f"Using ffmpeg executable at: {ffmpeg_path}")
 
         try:
             source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
@@ -191,9 +192,14 @@ async def play_next(ctx, voice_client):
         except discord.errors.ClientException as e:
             print(f"ClientException: {e}")
             await ctx.send(f"Error playing {title}: {e}")
+
+        except Exception as e:
+            print(f"Exception: {e}")
+            await ctx.send(f"An error occurred: {str(e)}")
     else:
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
+
 
 
 @bot.command()

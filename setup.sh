@@ -4,7 +4,9 @@
 mkdir -p /app/bin
 
 # Download precompiled ffmpeg binary
-wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz -O ffmpeg-release-64bit-static.tar.xz
+wget https://github.com/eugeneware/ffmpeg-static/releases/download/binaries/ffmpeg-release-64bit-static.tar.xz -O ffmpeg-release-64bit-static.tar.xz
+
+# Extract the downloaded tar.xz file
 tar -xf ffmpeg-release-64bit-static.tar.xz
 
 # Find the extracted directory name dynamically and copy the binaries

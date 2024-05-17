@@ -164,12 +164,13 @@ async def play_next(ctx, voice_client):
         ffmpeg_options = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn',
+            'executable': ffmpeg_path
         }
 
         print(f"Executing ffmpeg command with URL: {audio_url}")
 
         try:
-            source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options, executable=ffmpeg_path)
+            source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
             transformed_source = discord.PCMVolumeTransformer(source)
 
             def after_playing(error):
@@ -193,6 +194,7 @@ async def play_next(ctx, voice_client):
     else:
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
+
 
 @bot.command()
 async def skip(ctx):

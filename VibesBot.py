@@ -1,12 +1,9 @@
 # imports
+import random
 from Secrets_template import DISCORD_TOKEN, YOUTUBE_API_KEY
 from discord.ext import commands
-from pytube.exceptions import RegexMatchError
 import discord
-import urllib.request
-import re
-import random
-from pytube import YouTube
+import yt_dlp as youtube_dl
 import asyncio
 
 # Set the path to the ffmpeg binary
@@ -32,6 +29,7 @@ requester = None
 async def on_ready():
     print('SlugBeats is ready to play music')
     channel = bot.get_channel(CHANNEL_ID)
+    await channel.send('SlugBeats is ready to create a mood')
     await channel.send('SlugBeats is ready to play music')
 
 @bot.command()
@@ -91,10 +89,25 @@ async def play(ctx, url: str = None):
 
         if url:
             try:
-                video = YouTube(url)
-                audio_url = video.streams.filter(only_audio=True).first().url
-                title = video.title
-                requester = ctx.author.name
+                ydl_opts = {
+                    'format': 'bestaudio/best',
+                    'noplaylist': True,
+                    'quiet': True,
+                    'extractaudio': True,
+                    'audioformat': 'mp3',
+                    'outtmpl': 'downloads/%(title)s.%(ext)s',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                }
+                
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    info_dict = ydl.extract_info(url, download=False)
+                    audio_url = info_dict['url']
+                    title = info_dict['title']
+                    requester = ctx.author.name
 
                 playlist.append((title, audio_url, requester))
 
@@ -102,8 +115,6 @@ async def play(ctx, url: str = None):
                     await play_next(ctx, voice_client)
 
                 await ctx.send(f"Added to the queue: {title}")
-            except RegexMatchError:
-                await ctx.send("Invalid YouTube URL. Please provide a valid YouTube video URL.")
             except Exception as e:
                 await ctx.send(f"An error occurred: {str(e)}")
         else:
@@ -124,14 +135,15 @@ async def qplay(ctx, *url: str):
             voice_client = discord.utils.get(bot.voice_clients, channel=voice_channel)
 
         nospaceurl = '+'.join(url)
-        html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + nospaceurl)
-        vlink = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-        newurl = ("https://www.youtube.com/watch?v=" + vlink[0])
-
-        video = YouTube(newurl)
-        audio_url = video.streams.filter(only_audio=True).first().url
-        title = video.title
-        requester = ctx.author.name
+        search_url = f"https://www.youtube.com/results?search_query={nospaceurl}"
+        ydl_opts = {'quiet': True, 'format': 'bestaudio'}
+        
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(search_url, download=False)
+            video = info_dict['entries'][0]  # Get the first video from the search results
+            audio_url = video['url']
+            title = video['title']
+            requester = ctx.author.name
 
         playlist.append((title, audio_url, requester))
 
@@ -169,7 +181,7 @@ async def play_next(ctx, voice_client):
         print(f"Executing ffmpeg command with URL: {audio_url}")
 
         try:
-            source = discord.FFmpegPCMAudio(executable=ffmpeg_path, source=audio_url, **ffmpeg_options)
+            source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options, executable=ffmpeg_path)
             transformed_source = discord.PCMVolumeTransformer(source)
 
             def after_playing(error):
@@ -232,7 +244,7 @@ async def clear(ctx):
 async def repeat(ctx):
     global current_song_url, current_song_name, is_playing
     if is_playing:
-        playlist.insert(0, (current_song_name, current_song_url))
+        playlist.insert(0, (current_song_name, current_song_url, current_song_requester))
         await ctx.send(f"{current_song_name} added to the top of the list")
     else:
         await ctx.send("There's no song currently playing.")

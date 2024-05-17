@@ -8,6 +8,7 @@ import re
 import random
 from pytube import YouTube
 import asyncio
+import subprocess
 
 # Set the path to the ffmpeg binary
 ffmpeg_path = '/app/vendor/ffmpeg/ffmpeg'
@@ -284,6 +285,17 @@ async def leave(ctx):
         await ctx.send("Disconnected from the voice channel.")
     else:
         await ctx.send("I'm not connected to a voice channel.")
+
+def test_ffmpeg():
+    command = [ffmpeg_path, '-version']
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    test_ffmpeg()
 
 # gets discord token from untracked Secrets file for security
 bot.run(DISCORD_TOKEN)

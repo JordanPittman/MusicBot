@@ -30,9 +30,9 @@ requester = None
 # event handler that outputs when the bot is online
 @bot.event
 async def on_ready():
-    print('SlugBeats 2.0 is ready to play music')
+    print('SlugBeats is ready to play music')
     channel = bot.get_channel(CHANNEL_ID)
-    await channel.send('SlugBeats 2.0 is ready to play music')
+    await channel.send('SlugBeats is ready to play music')
 
 @bot.command()
 async def join(ctx):
@@ -164,14 +164,12 @@ async def play_next(ctx, voice_client):
         ffmpeg_options = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn',
-            'executable': ffmpeg_path
         }
 
         print(f"Executing ffmpeg command with URL: {audio_url}")
-        print(f"Using ffmpeg executable at: {ffmpeg_path}")
 
         try:
-            source = discord.FFmpegPCMAudio(audio_url, **ffmpeg_options)
+            source = discord.FFmpegPCMAudio(executable=ffmpeg_path, source=audio_url, **ffmpeg_options)
             transformed_source = discord.PCMVolumeTransformer(source)
 
             def after_playing(error):
@@ -192,15 +190,9 @@ async def play_next(ctx, voice_client):
         except discord.errors.ClientException as e:
             print(f"ClientException: {e}")
             await ctx.send(f"Error playing {title}: {e}")
-
-        except Exception as e:
-            print(f"Exception: {e}")
-            await ctx.send(f"An error occurred: {str(e)}")
     else:
         is_playing = False
         await ctx.send("There are no more songs in the queue.")
-
-
 
 @bot.command()
 async def skip(ctx):
